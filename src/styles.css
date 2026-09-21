@@ -494,3 +494,178 @@ h3 { font-size: 1.05rem; margin: 14px 0 8px; }
   .hero { font-size: 2.6rem; }
   .equip-row { grid-template-columns: 1fr; }
 }
+
+/* =========================
+   2D PET
+========================= */
+
+.pet2d {
+  position: relative;
+  width: 220px;
+  height: 240px;
+  cursor: pointer;
+  user-select: none;
+  animation: pet-idle 2.5s ease-in-out infinite;
+}
+
+/* 身体 */
+.pet-body {
+  position: absolute;
+  left: 50%;
+  top: 35px;
+  transform: translateX(-50%);
+}
+
+/* 头 */
+.pet-head {
+  position: relative;
+  width: 150px;
+  height: 135px;
+  background: #ffd9a8;
+  border: 5px solid #513b32;
+  border-radius: 48% 48% 45% 45%;
+}
+
+/* 耳朵 */
+.pet-ear {
+  position: absolute;
+  width: 55px;
+  height: 70px;
+  background: #ffd9a8;
+  border: 5px solid #513b32;
+  border-radius: 50%;
+  top: -35px;
+}
+
+.pet-ear-left {
+  left: 5px;
+  transform: rotate(-25deg);
+}
+
+.pet-ear-right {
+  right: 5px;
+  transform: rotate(25deg);
+}
+
+/* 眼睛 */
+.pet-eye {
+  position: absolute;
+  width: 18px;
+  height: 25px;
+  background: #33251f;
+  border-radius: 50%;
+  top: 55px;
+}
+
+.pet-eye.left {
+  left: 38px;
+}
+
+.pet-eye.right {
+  right: 38px;
+}
+
+/* 眨眼 */
+.pet-eye.blink {
+  height: 4px;
+  border-radius: 50%;
+  top: 65px;
+}
+
+/* 嘴巴 */
+.pet-mouth {
+  position: absolute;
+  left: 50%;
+  top: 82px;
+  transform: translateX(-50%);
+  font-size: 25px;
+}
+
+/* 腮红 */
+.pet-cheek {
+  position: absolute;
+  width: 22px;
+  height: 12px;
+  background: #ff9b9b;
+  border-radius: 50%;
+  top: 82px;
+}
+
+.pet-cheek.left {
+  left: 15px;
+}
+
+.pet-cheek.right {
+  right: 15px;
+}
+
+/* 身体 */
+.pet-belly {
+  position: absolute;
+  width: 100px;
+  height: 85px;
+  background: #fff1d6;
+  border: 5px solid #513b32;
+  border-radius: 45%;
+  left: 25px;
+  top: 110px;
+}
+
+/* 脚 */
+.pet-foot {
+  position: absolute;
+  width: 40px;
+  height: 25px;
+  background: #ffd9a8;
+  border: 5px solid #513b32;
+  border-radius: 50%;
+  top: 180px;
+}
+
+.pet-foot.left {
+  left: 15px;
+}
+
+.pet-foot.right {
+  right: 15px;
+}
+
+/* =========================
+   待机动画
+========================= */
+
+@keyframes pet-idle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* =========================
+   跳跃
+========================= */
+
+.pet-jump {
+  animation: pet-jump-animation 650ms ease-out;
+}
+
+@keyframes pet-jump-animation {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  35% {
+    transform: translateY(-55px) scale(1.05);
+  }
+
+  60% {
+    transform: translateY(-45px) rotate(4deg) scale(1.03);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
