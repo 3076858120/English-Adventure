@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useGame } from '../store/GameContext'
-import Pet3D from '../components/Pet3D'
+import Pet2D from '../components/Pet2D'
 import { ITEM_TYPES, ROOM_THEMES, getItem } from '../data/collection'
 
 // 宠物小窝:3D 宠物 + 装备 + 背包 + 房间 + 云端存档(家长转移码)
@@ -64,13 +64,26 @@ export default function PetRoom() {
         <div className="header-stats">🪙 {save.coins}</div>
       </header>
 
-      {/* 3D 宠物舞台 */}
-      <div className="pet-stage" style={{ background: `linear-gradient(${theme.wall} 60%, ${theme.floor} 60%)` }}>
-        <Pet3D color={pet?.petColor || '#FFD54F'} emoji={pet?.emoji || '🐥'} height={240} />
-        <div className="pet-name-tag">{pet?.emoji} {pet?.name}</div>
-        <div className="pet-hat-overlay">{save.equipment.hat && getItem(save.equipment.hat)?.emoji}</div>
-        <div className="pet-face-overlay">{save.equipment.face && getItem(save.equipment.face)?.emoji}</div>
-      </div>
+     {/* 2D 宠物舞台 */}
+<div
+  className="pet-stage"
+  style={{
+    background: `linear-gradient(${theme.wall} 60%, ${theme.floor} 60%)`,
+  }}
+>
+  <Pet2D
+    pet={pet}
+    rarity={pet?.rarity || 'B'}
+    equipment={{
+      hat: save.equipment.hat ? getItem(save.equipment.hat) : null,
+      face: save.equipment.face ? getItem(save.equipment.face) : null,
+    }}
+  />
+
+  <div className="pet-name-tag">
+    {pet?.emoji} {pet?.name}
+  </div>
+</div>
 
       <nav className="petroom-tabs">
         <button className={`tab-btn ${tab === 'pet' ? 'active' : ''}`} onClick={() => setTab('pet')}>🐾 宠物</button>
