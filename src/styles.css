@@ -380,7 +380,15 @@ h3 { font-size: 1.05rem; margin: 14px 0 8px; }
   font-size: 2.4rem; pointer-events: none;
   filter: drop-shadow(0 3px 3px rgba(0,0,0,0.2));
 }
-.pet-hat-overlay { top: 16px; }
+.pet-hat {
+  position: absolute;
+  z-index: 20;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 55px;
+  pointer-events: none;
+}
 .pet-face-overlay { top: 74px; }
 .petroom-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .tab-btn {
@@ -668,4 +676,15 @@ h3 { font-size: 1.05rem; margin: 14px 0 8px; }
   100% {
     transform: translateY(0) scale(1);
   }
+}
+
+.pet-face-equipment {
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  top: 58px;
+  transform: translateX(-50%);
+  font-size: 32px;
+  white-space: nowrap;
+  pointer-events: none;
 }
