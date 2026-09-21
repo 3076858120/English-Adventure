@@ -384,10 +384,11 @@ h3 { font-size: 1.05rem; margin: 14px 0 8px; }
   position: absolute;
   z-index: 20;
   left: 50%;
-  top: 0;
+  top: -10px;
   transform: translateX(-50%);
   font-size: 55px;
   pointer-events: none;
+  filter: drop-shadow(0 3px 3px rgba(0,0,0,0.2));
 }
 .pet-face-overlay { top: 74px; }
 .petroom-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -529,7 +530,7 @@ h3 { font-size: 1.05rem; margin: 14px 0 8px; }
   position: relative;
   width: 150px;
   height: 135px;
-  background: #ffd9a8;
+  background: var(--pet-color, #FFD54F);
   border: 5px solid #513b32;
   border-radius: 48% 48% 45% 45%;
 }
@@ -539,7 +540,7 @@ h3 { font-size: 1.05rem; margin: 14px 0 8px; }
   position: absolute;
   width: 55px;
   height: 70px;
-  background: #ffd9a8;
+  background: var(--pet-color, #FFD54F);
   border: 5px solid #513b32;
   border-radius: 50%;
   top: -35px;
@@ -624,7 +625,7 @@ h3 { font-size: 1.05rem; margin: 14px 0 8px; }
   position: absolute;
   width: 40px;
   height: 25px;
-  background: #ffd9a8;
+  background: var(--pet-color, #FFD54F);
   border: 5px solid #513b32;
   border-radius: 50%;
   top: 180px;
@@ -687,4 +688,137 @@ h3 { font-size: 1.05rem; margin: 14px 0 8px; }
   font-size: 32px;
   white-space: nowrap;
   pointer-events: none;
+}
+
+/* =========================
+   宠物稀有度特效
+========================= */
+
+.pet-aura {
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  left: 15px;
+  top: 25px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.2;
+}
+
+/* B 普通 */
+.pet-rarity-B {
+  color: #A1887F;
+}
+
+.pet-rarity-B .pet-aura {
+  box-shadow: 0 0 18px currentColor;
+}
+
+/* A 优秀 */
+.pet-rarity-A {
+  color: #81C784;
+}
+
+.pet-rarity-A .pet-aura {
+  box-shadow: 0 0 28px currentColor;
+  opacity: 0.3;
+}
+
+/* S 稀有 */
+.pet-rarity-S {
+  color: #4FC3F7;
+}
+
+.pet-rarity-S .pet-aura {
+  box-shadow:
+    0 0 25px currentColor,
+    0 0 50px currentColor;
+  opacity: 0.35;
+  animation: aura-pulse 2s infinite;
+}
+
+/* SR 史诗 */
+.pet-rarity-SR {
+  color: #B388FF;
+}
+
+.pet-rarity-SR .pet-aura {
+  box-shadow:
+    0 0 30px currentColor,
+    0 0 60px currentColor;
+  opacity: 0.45;
+  animation: aura-pulse 1.7s infinite;
+}
+
+/* SSR 传说 */
+.pet-rarity-SSR {
+  color: #FF6B9D;
+}
+
+.pet-rarity-SSR .pet-aura {
+  box-shadow:
+    0 0 35px currentColor,
+    0 0 65px currentColor,
+    0 0 95px currentColor;
+  opacity: 0.5;
+  animation: aura-pulse 1.4s infinite;
+}
+
+@keyframes aura-pulse {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.25;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 0.55;
+  }
+}
+
+.pet-particles {
+  position: absolute;
+  left: 50%;
+  top: 25px;
+  transform: translateX(-50%);
+  width: 210px;
+  text-align: center;
+  font-size: 22px;
+  pointer-events: none;
+  z-index: 5;
+  animation: particle-float 2s ease-in-out infinite;
+}
+
+.pet-rarity-B .pet-particles {
+  opacity: 0.25;
+}
+
+.pet-rarity-A .pet-particles {
+  opacity: 0.45;
+}
+
+.pet-rarity-S .pet-particles {
+  opacity: 0.7;
+}
+
+.pet-rarity-SR .pet-particles {
+  opacity: 0.85;
+  font-size: 25px;
+}
+
+.pet-rarity-SSR .pet-particles {
+  opacity: 1;
+  font-size: 28px;
+  animation: particle-float 1.5s ease-in-out infinite;
+}
+
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(-8px);
+  }
 }
