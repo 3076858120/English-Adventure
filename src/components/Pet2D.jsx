@@ -44,9 +44,12 @@ export default function Pet2D({
 
   return (
     <div
-      className={`pet2d pet-rarity-${rarity} ${jump ? 'pet-jump' : ''}`}
-      onClick={handleClick}
-    >
+  className={`pet2d pet-rarity-${rarity} ${jump ? 'pet-jump' : ''}`}
+  style={{
+    '--pet-color': pet?.petColor || '#FFD54F',
+  }}
+  onClick={handleClick}
+>
       {/* 稀有度光环 */}
       <div className="pet-aura" />
 
