@@ -10,18 +10,25 @@ export default function Pet2D({
 
   // 自动眨眼
   useEffect(() => {
-    const timer = setInterval(() => {
-      setBlink(true)
+    let timer
 
-      setTimeout(() => {
-        setBlink(false)
-      }, 150)
-    }, 3500 + Math.random() * 2000)
+    const blinkLoop = () => {
+      timer = setTimeout(() => {
+        setBlink(true)
 
-    return () => clearInterval(timer)
+        setTimeout(() => {
+          setBlink(false)
+          blinkLoop()
+        }, 150)
+      }, 3000 + Math.random() * 2500)
+    }
+
+    blinkLoop()
+
+    return () => clearTimeout(timer)
   }, [])
 
-  // 点击跳跃
+  // 点击宠物跳跃
   const handleClick = () => {
     if (jump) return
 
@@ -32,26 +39,26 @@ export default function Pet2D({
     }, 650)
   }
 
+  const hat = equipment?.hat
+  const face = equipment?.face
+
   return (
     <div
       className={`pet2d pet-rarity-${rarity} ${jump ? 'pet-jump' : ''}`}
       onClick={handleClick}
     >
-
-      {/* 稀有度光效 */}
+      {/* 稀有度光环 */}
       <div className="pet-aura" />
 
-      {/* 翅膀 */}
-      {equipment.wings && (
-        <div className="pet-wings">
-          🪽
-        </div>
-      )}
+      {/* 稀有度粒子 */}
+      <div className="pet-particles">
+        ✦　✧　✦
+      </div>
 
       {/* 帽子 */}
-      {equipment.hat && (
+      {hat && (
         <div className="pet-hat">
-          🎩
+          {hat.emoji}
         </div>
       )}
 
@@ -66,8 +73,20 @@ export default function Pet2D({
         <div className="pet-head">
 
           {/* 眼睛 */}
-          <div className={`pet-eye left ${blink ? 'blink' : ''}`} />
-          <div className={`pet-eye right ${blink ? 'blink' : ''}`} />
+          <div
+            className={`pet-eye left ${blink ? 'blink' : ''}`}
+          />
+
+          <div
+            className={`pet-eye right ${blink ? 'blink' : ''}`}
+          />
+
+          {/* 脸部装备 */}
+          {face && (
+            <div className="pet-face-equipment">
+              {face.emoji}
+            </div>
+          )}
 
           {/* 嘴巴 */}
           <div className="pet-mouth">
@@ -88,19 +107,6 @@ export default function Pet2D({
         <div className="pet-foot right" />
 
       </div>
-
-      {/* 武器 */}
-      {equipment.weapon && (
-        <div className="pet-weapon">
-          ⚔️
-        </div>
-      )}
-
-      {/* 稀有度粒子 */}
-      <div className="pet-particles">
-        ✦　✧　✦
-      </div>
-
     </div>
   )
 }
