@@ -18,12 +18,13 @@ export const ITEM_TYPES = {
   coin: { label: '金币', emoji: '🪙' },
 }
 
-// 全部物品。pets 带 petColor 供 3D 渲染使用;pool:false 表示不在盲盒池中
+// 宠物现在直接使用自己的 emoji 图案，不再统一套用“圆头宠物身体”。
+// 后续如果加入正式 2D 图片，只需要给宠物增加 image 字段即可。
 export const ITEMS = [
   // 初始宠物(免费拥有)
   { id: 'chick0', name: '小黄鸡·萌新', emoji: '🐥', rarity: 'A', type: 'pet', petColor: '#FFD54F', pool: false },
 
-  // 宠物
+  // 原有宠物
   { id: 'corgi', name: '柯基骑士', emoji: '🐶', rarity: 'SSR', type: 'pet', petColor: '#FFB74D' },
   { id: 'magiccat', name: '魔法猫', emoji: '🐱', rarity: 'SSR', type: 'pet', petColor: '#9575CD' },
   { id: 'fox', name: '火焰狐', emoji: '🦊', rarity: 'SR', type: 'pet', petColor: '#FF7043' },
@@ -32,6 +33,15 @@ export const ITEMS = [
   { id: 'penguin', name: '溜冰企鹅', emoji: '🐧', rarity: 'S', type: 'pet', petColor: '#4FC3F7' },
   { id: 'frog', name: '跳跳蛙', emoji: '🐸', rarity: 'A', type: 'pet', petColor: '#66BB6A' },
   { id: 'turtle', name: '稳重龟', emoji: '🐢', rarity: 'B', type: 'pet', petColor: '#8D6E63' },
+
+  // 新增热门/儿童熟悉的角色主题：先使用对应图案占位，后续可替换为正式授权 2D 素材
+  { id: 'nailong', name: '奶龙', emoji: '🐉', rarity: 'SSR', type: 'pet', petColor: '#FFD54F' },
+  { id: 'labubu', name: 'LABUBU', emoji: '👹', rarity: 'SSR', type: 'pet', petColor: '#8D6E63' },
+  { id: 'molly', name: 'MOLLY', emoji: '🧸', rarity: 'SR', type: 'pet', petColor: '#81D4FA' },
+  { id: 'crybaby', name: 'CRYBABY', emoji: '🥹', rarity: 'SR', type: 'pet', petColor: '#B3E5FC' },
+  { id: 'dimoo', name: 'DIMOO', emoji: '👦', rarity: 'S', type: 'pet', petColor: '#90CAF9' },
+  { id: 'skullpanda', name: 'SKULLPANDA', emoji: '🐼', rarity: 'S', type: 'pet', petColor: '#424242' },
+  { id: 'ultraman', name: '奥特曼', emoji: '🦸', rarity: 'SSR', type: 'pet', petColor: '#EF5350' },
 
   // 宠物装备
   { id: 'crown', name: '国王皇冠', emoji: '👑', rarity: 'SSR', type: 'equipment', slot: 'hat' },
