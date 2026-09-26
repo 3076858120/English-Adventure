@@ -8,7 +8,7 @@ export default function Pet2D({
   const [blink, setBlink] = useState(false)
   const [jump, setJump] = useState(false)
 
-  // 自动眨眼
+  // 自动眨眼：只有原生 emoji 宠物需要“眨眼”时使用；角色图案本身不再强行画统一眼睛。
   useEffect(() => {
     let timer
 
@@ -24,92 +24,45 @@ export default function Pet2D({
     }
 
     blinkLoop()
-
     return () => clearTimeout(timer)
   }, [])
 
-  // 点击宠物跳跃
   const handleClick = () => {
     if (jump) return
-
     setJump(true)
-
-    setTimeout(() => {
-      setJump(false)
-    }, 650)
+    setTimeout(() => setJump(false), 650)
   }
 
   const hat = equipment?.hat
   const face = equipment?.face
+  const emoji = pet?.emoji || '🐥'
 
   return (
     <div
-  className={`pet2d pet-rarity-${rarity} ${jump ? 'pet-jump' : ''}`}
-  style={{
-    '--pet-color': pet?.petColor || '#FFD54F',
-  }}
-  onClick={handleClick}
->
+      className={`pet2d pet-rarity-${rarity} ${jump ? 'pet-jump' : ''}`}
+      style={{ '--pet-color': pet?.petColor || '#FFD54F' }}
+      onClick={handleClick}
+      title={`${pet?.name || '宠物'}，点击它会跳跃`}
+    >
       {/* 稀有度光环 */}
       <div className="pet-aura" />
 
       {/* 稀有度粒子 */}
-      <div className="pet-particles">
-        ✦　✧　✦
+      <div className="pet-particles">✦　✧　✦</div>
+
+      {/* 宠物本体：直接显示抽到的对应图案，不再统一画圆头 */}
+      <div className={`pet-emoji ${blink ? 'pet-emoji-blink' : ''}`}>
+        {emoji}
       </div>
 
-      {/* 帽子 */}
-      {hat && (
-        <div className="pet-hat">
-          {hat.emoji}
-        </div>
-      )}
+      {/* 帽子装备 */}
+      {hat && <div className="pet-hat">{hat.emoji}</div>}
 
-      {/* 宠物身体 */}
-      <div className="pet-body">
+      {/* 脸部装备 */}
+      {face && <div className="pet-face-equipment">{face.emoji}</div>}
 
-        {/* 耳朵 */}
-        <div className="pet-ear pet-ear-left" />
-        <div className="pet-ear pet-ear-right" />
-
-        {/* 头 */}
-        <div className="pet-head">
-
-          {/* 眼睛 */}
-          <div
-            className={`pet-eye left ${blink ? 'blink' : ''}`}
-          />
-
-          <div
-            className={`pet-eye right ${blink ? 'blink' : ''}`}
-          />
-
-          {/* 脸部装备 */}
-          {face && (
-            <div className="pet-face-equipment">
-              {face.emoji}
-            </div>
-          )}
-
-          {/* 嘴巴 */}
-          <div className="pet-mouth">
-            ◡
-          </div>
-
-          {/* 腮红 */}
-          <div className="pet-cheek left" />
-          <div className="pet-cheek right" />
-
-        </div>
-
-        {/* 身体 */}
-        <div className="pet-belly" />
-
-        {/* 脚 */}
-        <div className="pet-foot left" />
-        <div className="pet-foot right" />
-
-      </div>
+      {/* 宠物名称 */}
+      <div className="pet-name-tag">{pet?.name || '小伙伴'}</div>
     </div>
   )
 }
