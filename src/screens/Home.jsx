@@ -25,7 +25,7 @@ function CloudBadge() {
 }
 
 export default function Home() {
-  const { save, completedCount, nextRoute, activePetItem } = useGame()
+  const { save, completedCount, nextRoute, activePetItem, completedSchoolTaskCount } = useGame()
   const pet = activePetItem || getItem(save.activePet) || getItem('chick0')
 
   return (
@@ -55,6 +55,15 @@ export default function Home() {
 
       <button className="btn btn-primary btn-big btn-start" onClick={() => { window.location.hash = nextRoute }}>
         {completedCount === 0 ? '开始今日冒险！' : '继续冒险！'}
+      </button>
+
+      <button className="school-home-entry" onClick={() => (window.location.hash = '#school')}>
+        <span className="school-home-entry-icon">📚</span>
+        <span className="school-home-entry-text">
+          <strong>学校任务</strong>
+          <small>先补基础，再去完成现实中的学校作业</small>
+        </span>
+        <span className="school-home-entry-progress">{completedSchoolTaskCount} 关完成 →</span>
       </button>
 
       <nav className="home-nav">
