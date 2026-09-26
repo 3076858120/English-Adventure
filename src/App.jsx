@@ -8,14 +8,16 @@ import Battle from './screens/Battle'
 import Reward from './screens/Reward'
 import Gacha from './screens/Gacha'
 import PetRoom from './screens/PetRoom'
+import SchoolTask from './screens/SchoolTask'
 
-// hash 路由:#map #pets #gacha #lesson-3 #level-23 #reward-23 #home
 function parseHash() {
-  const raw = (window.location.hash || '').replace(/^#\/?/, '').split('?')[0] // 去掉 ?chest= 之类参数
+  const raw = (window.location.hash || '').replace(/^#\/?/, '').split('?')[0]
   if (!raw || raw === 'home') return { name: 'home' }
   const m = raw.match(/^(lesson|level|reward)-(\d+)$/)
   if (m) return { name: m[1], arg: Number(m[2]) }
-  if (['map', 'pets', 'gacha'].includes(raw)) return { name: raw }
+  const school = raw.match(/^school-task-(.+)$/)
+  if (school) return { name: 'school-task', arg: school[1] }
+  if (['map', 'pets', 'gacha', 'school'].includes(raw)) return { name: raw }
   return { name: 'home' }
 }
 
@@ -33,8 +35,6 @@ function Router({ route }) {
   const { save, loading } = useGame()
 
   if (loading) return <LoadingScreen />
-
-  // 没有昵称时强制先进入命名页
   if (!save.nickname) return <NameGate />
 
   switch (route.name) {
@@ -50,6 +50,10 @@ function Router({ route }) {
       return <Gacha />
     case 'pets':
       return <PetRoom />
+    case 'school':
+      return <SchoolTask taskId={null} />
+    case 'school-task':
+      return <SchoolTask taskId={route.arg} />
     case 'home':
     default:
       return <Home />
