@@ -8,6 +8,7 @@ import Battle from './screens/Battle'
 import Reward from './screens/Reward'
 import Gacha from './screens/Gacha'
 import PetRoom from './screens/PetRoom'
+import SchoolHome from './screens/SchoolHome'
 import SchoolTask from './screens/SchoolTask'
 
 function parseHash() {
@@ -51,7 +52,7 @@ function Router({ route }) {
     case 'pets':
       return <PetRoom />
     case 'school':
-      return <SchoolTask taskId={null} />
+      return <SchoolHome />
     case 'school-task':
       return <SchoolTask taskId={route.arg} />
     case 'home':
