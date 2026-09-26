@@ -13,54 +13,60 @@
 
 ### `public.game_progress`
 
-```sql
-create table if not exists public.game_progress (
-  user_id uuid primary key references auth.users(id) on delete cascade,
-  save_data jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now()
-);
+游戏状态仍然保存在 `save_data` JSONB 中；`user_id` 是 Supabase 匿名账号 UUID。
 
-alter table public.game_progress enable row level security;
+### `public.player_profiles`
 
--- 用户只能访问自己的数据(不要改成公开读!)
-create policy "own progress select"  on public.game_progress for select to authenticated using (auth.uid() = user_id);
-create policy "own progress insert"  on public.game_progress for insert to authenticated with check (auth.uid() = user_id);
-create policy "own progress update"  on public.game_progress for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+现在增加玩家身份表：
 
-grant select, insert, update on public.game_progress to authenticated;
-```
+- `user_id`: 唯一 Supabase 用户 UUID
+- `nickname`: 游戏昵称
+- `nickname_key`: 自动生成的 `lower(trim(nickname))`，有 UNIQUE 约束
 
-当前阶段整包游戏状态存进 `save_data` JSONB(nickname、xp、coins、unlocked、completed、lessonsDone、streak、lastDate、pets、inventory、equipment、roomItems、gacha、roomTheme…),未来做教师端再考虑拆表。
+因此 `小明`、` 小明 `、`小明` 会被视为同一个昵称，不能重复注册。
 
-## 必须开启:Anonymous Sign-Ins
+## 唯一昵称流程
 
-**Supabase Dashboard → English Adventure 项目 → Authentication → Sign In / Up → Email → Anonymous sign-ins → 打开 → Save**
+1. 首次进入自动匿名登录。
+2. 输入游戏昵称。
+3. 前端调用 `claim_player_name` 数据库函数。
+4. 数据库使用 UNIQUE 约束进行最终判定。
+5. 名字已被使用时，页面提示“这个冒险家名字已经被使用啦，请换一个名字！”。
+6. 名字可用时才写入游戏存档。
 
-开启后前端无需任何注册流程,首次打开自动匿名登录;若未开启,网站会自动退回纯本地存档模式(不会报错、不会白屏)。
+数据库函数使用 `SECURITY DEFINER` + `search_path = ''`，只暴露“这个名字能否被当前账号认领”的结果，不直接公开其他玩家的存档。
 
-## 前端配置(仅公开配置,绝不使用 service_role)
+## 同名历史数据
 
-前端只需要两个公开值,通过环境变量注入:
+旧版本曾经允许匿名 UUID 各自保存相同昵称，因此数据库里可能存在同名旧存档。现在的迁移会将同名旧存档按昵称合并：
+
+- 完成关卡、课程、宠物、背包、家具、学校任务：取去重并集
+- XP、金币、解锁关卡、连续天数：取最大值
+- 最后更新的账号作为合并后的主账号
+- 之后昵称通过 `player_profiles.nickname_key` 唯一约束锁定
+
+## 安全说明
+
+目前这个项目使用的是匿名登录。**昵称只是游戏身份，不是安全凭证**；不要把真实姓名、手机号等个人信息作为昵称。跨设备恢复仍建议使用宠物小窝里的“转移码”，而不是只凭昵称登录。
+
+Supabase 官方建议使用 RLS 保护客户端可访问的数据，并谨慎限制 `SECURITY DEFINER` 函数的权限。citeturn0search0turn0search1
+
+## 前端配置
 
 - `VITE_SUPABASE_URL` = Project URL
 - `VITE_SUPABASE_ANON_KEY` = Project API Keys → publishable / anon
 
-GitHub Pages 构建时从仓库 **Actions Variables**(非 Secrets,因为这是前端公开配置)读取:
-**Repository → Settings → Secrets and variables → Actions → Variables** 里添加上面两个变量。
+GitHub Pages 构建时从仓库 Actions Variables 读取。
 
-本地开发:`cp .env.example .env.local` 后填入两个值。
+## 必须开启
+
+Supabase Dashboard → Authentication → Sign In / Up → Anonymous Sign-Ins → 开启。
 
 ## 同步策略
 
-1. 首次打开:`getSession()` → 无会话则 `signInAnonymously()` → 拉取云端存档
-2. 云端有存档且较新 → 直接恢复;本地较新 → 上传本地
-3. 游戏中:localStorage 立即写,云端 900ms 防抖合并写;`visibilitychange`/`beforeunload` 补推
-4. 任何云端失败 → 自动退回本地模式,顶部徽章提示,可手动重试
-5. Supabase 会话保存在 **IndexedDB**:清空 localStorage 后重新打开仍能恢复云端进度
-6. 换设备:宠物小窝 → 云存档 → 家长小助手 → 复制/粘贴「转移码」
-
-## 故障排查
-
-- 顶部显示「📴 本地模式」:检查 Dashboard 是否开启 Anonymous sign-ins、两个 Variables 是否配置、Actions 是否重新部署
-- 看不到新数据:确认 RLS 策略仍是 `auth.uid() = user_id`,没有额外的公开读策略
-- 绝对不要把 `service_role` / secret key 放进任何前端代码、`.env`、GitHub 或 Actions 配置
+- localStorage 立即缓存
+- 云端 900ms 防抖同步
+- 页面隐藏/关闭时补推
+- 云端不可用时自动退回本地模式
+- IndexedDB 保存 Supabase 会话
+- 宠物小窝的转移码仍然可用于跨设备恢复同一个匿名账号
