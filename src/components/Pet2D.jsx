@@ -65,6 +65,10 @@ export default function Pet2D({
           display: 'block',
           width: 'max-content',
           height: '112px',
+          minWidth: 0,
+          minHeight: 0,
+          padding: 0,
+          margin: 0,
           background: 'transparent',
           border: 0,
           boxShadow: 'none',
@@ -88,27 +92,6 @@ export default function Pet2D({
           {face.emoji}
         </div>
       )}
-
-      <div
-        className="pet-name-tag"
-        style={{
-          position: 'absolute',
-          left: '50%',
-          bottom: '2px',
-          transform: 'translateX(-50%)',
-          zIndex: 70,
-          background: 'rgba(255,255,255,0.9)',
-          borderRadius: '999px',
-          padding: '4px 10px',
-          fontSize: '13px',
-          fontWeight: 800,
-          whiteSpace: 'nowrap',
-          boxShadow: '0 2px 7px rgba(0,0,0,0.12)',
-          pointerEvents: 'none',
-        }}
-      >
-        {pet?.name || '小伙伴'}
-      </div>
     </div>
   )
 }
