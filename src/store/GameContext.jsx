@@ -32,9 +32,7 @@ const reinit = initStorage
 
 const GameContext = createContext(null)
 
-// 云同步防抖间隔(避免每次点击都打 Supabase)
 const CLOUD_DEBOUNCE_MS = 900
-// 初始化兜底超时:云端再慢也不能让游戏卡在 loading
 const INIT_TIMEOUT_MS = 8000
 
 function defaultSave() {
@@ -45,6 +43,7 @@ function defaultSave() {
     unlocked: 1,
     completed: [],
     lessonsDone: [],
+    schoolTasks: { completed: [] },
     streak: 0,
     lastDate: '',
     activePet: 'chick0',
@@ -59,13 +58,16 @@ function defaultSave() {
   }
 }
 
-// 兼容旧存档/缺字段
 function normalize(data) {
   const base = defaultSave()
   if (!data || typeof data !== 'object') return base
   const merged = { ...base, ...data }
   merged.completed = Array.isArray(data.completed) ? data.completed : []
   merged.lessonsDone = Array.isArray(data.lessonsDone) ? data.lessonsDone : []
+  merged.schoolTasks =
+    data.schoolTasks && typeof data.schoolTasks === 'object'
+      ? { completed: Array.isArray(data.schoolTasks.completed) ? data.schoolTasks.completed : [] }
+      : { completed: [] }
   merged.pets = Array.isArray(data.pets) && data.pets.length ? data.pets : ['chick0']
   merged.inventory = Array.isArray(data.inventory) ? data.inventory : []
   merged.roomItems = Array.isArray(data.roomItems) ? data.roomItems : []
@@ -87,14 +89,13 @@ function normalize(data) {
 export function GameProvider({ children }) {
   const [save, setSave] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [cloudStatus, setCloudStatus] = useState('loading') // loading|cloud|local|disabled
+  const [cloudStatus, setCloudStatus] = useState('loading')
   const [lastSyncAt, setLastSyncAt] = useState(null)
   const [cloudError, setCloudError] = useState(null)
 
   const cloudTimer = useRef(null)
   const latestRef = useRef(null)
 
-  // ---- 云端推送(防抖) ----
   const flushCloud = useCallback(async () => {
     const data = latestRef.current
     if (!data) return
@@ -114,7 +115,6 @@ export function GameProvider({ children }) {
     cloudTimer.current = setTimeout(flushCloud, CLOUD_DEBOUNCE_MS)
   }, [flushCloud])
 
-  // 页面隐藏/关闭时立即补推一次,避免丢进度
   useEffect(() => {
     const flush = () => {
       if (cloudTimer.current) clearTimeout(cloudTimer.current)
@@ -131,7 +131,6 @@ export function GameProvider({ children }) {
     }
   }, [flushCloud])
 
-  // ---- 初始化:云 → 本地,永不白屏 ----
   useEffect(() => {
     let cancelled = false
     const timeout = new Promise((resolve) =>
@@ -164,7 +163,6 @@ export function GameProvider({ children }) {
     }
   }, [])
 
-  // ---- 统一更新入口:立即写本地,防抖写云端 ----
   const update = useCallback(
     (fn) => {
       setSave((prev) => {
@@ -182,7 +180,6 @@ export function GameProvider({ children }) {
     [scheduleCloudPush],
   )
 
-  // ---- 连续学习天数 ----
   const touchActivity = useCallback(
     (s) => {
       const today = todayStr()
@@ -193,7 +190,6 @@ export function GameProvider({ children }) {
     [],
   )
 
-  // ================= 动作 =================
   const setName = useCallback(
     (name) => update((s) => ({ ...s, nickname: String(name || '').trim().slice(0, 12) || '小冒险家' })),
     [update],
@@ -221,7 +217,28 @@ export function GameProvider({ children }) {
     [update, touchActivity],
   )
 
-  // 通关第 n 关:发奖励、解锁下一关,返回宝箱掉落(供 Reward 页展示)
+  const completeSchoolTask = useCallback(
+    (taskId, correctCount = 0, stageCount = 1) => {
+      let firstTime = false
+      update((s) => {
+        firstTime = !s.schoolTasks.completed.includes(taskId)
+        if (!firstTime) return s
+        touchActivity(s)
+        return {
+          ...s,
+          schoolTasks: {
+            ...s.schoolTasks,
+            completed: [...s.schoolTasks.completed, taskId],
+          },
+          xp: s.xp + 30 + Math.max(0, stageCount - 1) * 5,
+          coins: s.coins + 20,
+        }
+      })
+      return firstTime
+    },
+    [update, touchActivity],
+  )
+
   const completeLevel = useCallback(
     (levelId) => {
       let chestItem = null
@@ -252,7 +269,6 @@ export function GameProvider({ children }) {
     [update, touchActivity],
   )
 
-  // 抽盲盒:扣 60 金币,返回结果(供动画展示)
   const doGacha = useCallback(() => {
     let result = null
     update((s) => {
@@ -270,7 +286,6 @@ export function GameProvider({ children }) {
         } else if (it.type === 'pet') {
           if (!pets.includes(it.id)) {
             pets = [...pets, it.id]
-            // 第一次抽到新宠物时自动切换,给孩子惊喜
             activePet = it.id
           }
         } else {
@@ -329,7 +344,6 @@ export function GameProvider({ children }) {
 
   const setRoomTheme = useCallback((themeId) => update((s) => ({ ...s, roomTheme: themeId })), [update])
 
-  // 手动同步按钮
   const syncNow = useCallback(async () => {
     await flushCloud()
     return cloudInfo()
@@ -347,7 +361,6 @@ export function GameProvider({ children }) {
     return ok
   }, [])
 
-  // 家长转移码
   const getTransferCode = useCallback(async () => exportTransferCode(), [])
   const restoreByTransferCode = useCallback(
     async (code) => {
@@ -370,19 +383,16 @@ export function GameProvider({ children }) {
     [],
   )
 
-  // ---- 派生状态 ----
   const derived = useMemo(() => {
     if (!save) return null
     const completed = save.completed
     const isLevelUnlocked = (n) => n <= save.unlocked
     const isBoss = (n) => BOSS_LEVELS.includes(n)
-    // 章节学习营是否完成(每章第一关之前必须学习营)
     const campDone = (chapterId) => save.lessonsDone.includes(chapterId)
     const levelNeedsCamp = (n) => {
       const start = chapterStart(Math.floor((n - 1) / 4) + 1)
       return n === start && !campDone(Math.floor((n - 1) / 4) + 1)
     }
-    // “开始今日冒险”要去的下一站
     let nextRoute = '#map'
     for (let n = 1; n <= TOTAL_LEVELS; n++) {
       if (!completed.includes(n)) {
@@ -399,6 +409,7 @@ export function GameProvider({ children }) {
       levelNeedsCamp,
       nextRoute,
       activePetItem: getItem(save.activePet),
+      completedSchoolTaskCount: save.schoolTasks.completed.length,
     }
   }, [save])
 
@@ -412,6 +423,7 @@ export function GameProvider({ children }) {
       ...(derived || {}),
       setName,
       completeLesson,
+      completeSchoolTask,
       completeLevel,
       doGacha,
       addItem,
@@ -435,6 +447,7 @@ export function GameProvider({ children }) {
       derived,
       setName,
       completeLesson,
+      completeSchoolTask,
       completeLevel,
       doGacha,
       addItem,
