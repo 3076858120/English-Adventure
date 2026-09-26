@@ -7,8 +7,10 @@ export const BOSS_LEVELS = [5, 10, 15, 20, 25, 28, 31, 34, 37, 40]
 // 有宝箱奖励的关卡(部分关卡)
 export const CHEST_LEVELS = [3, 8, 12, 18, 22, 27, 30, 35, 38, 40]
 
-export const REWARD = { xp: 50, coins: 20 }        // 普通关卡奖励
-export const CAMP_REWARD = { xp: 10, coins: 5 }    // 学习营奖励
+// 控制金币获取速度：普通关卡 8 金币，学习营 2 金币。
+// 盲盒仍为 60 金币，因此需要连续完成多关才能抽一次。
+export const REWARD = { xp: 50, coins: 8 }
+export const CAMP_REWARD = { xp: 10, coins: 2 }
 
 export const CHAPTERS = [
   { id: 1,  name: '新手村',       icon: '🏡', color: '#4CAF50', desc: '学会打招呼,认识第一个单词朋友!' },
