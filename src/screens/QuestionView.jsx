@@ -140,8 +140,12 @@ export default function QuestionView({ q, demo = false, explain = '', frozen = f
         </div>
       )
     }
-    if (q.type === 'image') return <div className="quiz-emoji">{q.emoji}</div>
-    if (q.type === 'pic') return <div className="quiz-emoji">{q.emoji}</div>
+    if (q.type === 'image') {
+      return <div className="picture-card"><span className="picture-emoji">{q.emoji}</span></div>
+    }
+    if (q.type === 'pic') {
+      return <div className="picture-card"><span className="picture-emoji">{q.emoji}</span></div>
+    }
     if (q.type === 'respond') {
       return (
         <div className="respond-q">
@@ -163,7 +167,7 @@ export default function QuestionView({ q, demo = false, explain = '', frozen = f
     if (q.type === 'cloze') {
       return (
         <div className="cloze-line">
-          {q.before} <span className={`cloze-blank ${picked ? 'filled' : ''}`}>{picked ? q.answer : '_____'}</span> {q.after}
+          {q.before} <span className={`cloze-blank ${picked || demo ? 'filled' : ''}`}>{picked || demo ? q.answer : '_____'}</span> {q.after}
         </div>
       )
     }
@@ -301,7 +305,7 @@ export default function QuestionView({ q, demo = false, explain = '', frozen = f
         {q.options.map((opt) => (
           <button
             key={opt}
-            className={`option-btn ${sentenceOpts ? 'opt-sent' : ''} ${picked && opt === correctText ? 'correct' : shake === opt ? 'wrong shake' : picked ? 'dim' : ''}`}
+            className={`option-btn ${sentenceOpts ? 'opt-sent' : ''} ${(picked || demo) && opt === correctText ? 'correct' : shake === opt ? 'wrong shake' : picked ? 'dim' : ''}`}
             disabled={disabled}
             onClick={() => pickOption(opt, correctText)}
           >

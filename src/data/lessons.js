@@ -20,6 +20,29 @@ function stripTail(s) {
   return s.replace(/[.!?,]+$/, '')
 }
 
+// 看图选词白名单:emoji 与词义直接对应的具体名词/颜色/数字
+// 抽象词(Africa/very/jump in trees/years old… )的 emoji 与词义无关,
+// 绝不出看图题 —— 否则孩子看着图无法判断(线上 bug 修复)
+const PICTURE_WORDS = new Set([
+  // 动物
+  'panda', 'monkey', 'elephant', 'polar bear', 'seal', 'cat', 'dog', 'tiger', 'bird', 'fish',
+  // 物品/食物
+  'cake', 'kite', 'bike', 'home', 'nose', 'grape', 'rose', 'lake',
+  'pig', 'milk', 'bus', 'sun', 'cup', 'map', 'bed', 'pen', 'river',
+  'school', 'book', 'pencil', 'desk', 'teacher', 'student', 'ruler', 'bag',
+  'bread', 'juice', 'water', 'candy', 'fruit', 'egg', 'rice', 'banana',
+  // 家庭
+  'family', 'dad', 'mom', 'sister', 'brother', 'grandma', 'grandpa', 'baby',
+  // 自然
+  'tree', 'flower', 'rain', 'wind', 'cloud', 'sky', 'star', 'moon', 'snow',
+  // 其他
+  'friend', 'animal', 'black', 'white', 'five', 'nine',
+])
+
+function isPictureWord(w) {
+  return PICTURE_WORDS.has(w.word) && w.emoji
+}
+
 function uniqueOptions(correct, pool, n = 3) {
   const opts = [correct]
   const shuffled = shuffle(pool)
@@ -108,6 +131,7 @@ const SENT_TYPES = ['sentence', 'cloze', 'pic', 'respond', 'phonics']
 export function makeQuestions(chapterId, count, boss = false, levelId = 0) {
   const data = getChapterData(chapterId)
   const pool = wordPool(chapterId)
+  const picPool = pool.filter(isPictureWord)
   const ph = data.phonics
   const questions = []
   const usedWords = new Set()
@@ -119,14 +143,32 @@ export function makeQuestions(chapterId, count, boss = false, levelId = 0) {
     usedWords.add(word.word)
     return word
   }
+  // 看图选词只能用"图和词义相符"的具体名词
+  const pickPictureWord = () => {
+    if (!picPool.length) return null
+    let word = picPool[Math.floor(Math.random() * picPool.length)]
+    let guard = 0
+    while (usedWords.has(word.word) && guard++ < 20) word = picPool[Math.floor(Math.random() * picPool.length)]
+    usedWords.add(word.word)
+    return word
+  }
+  const wordSlot = (i) => {
+    let t = ['listen', 'image', 'cn'][i % 3]
+    let word = null
+    if (t === 'image') {
+      word = pickPictureWord()
+      if (!word) t = 'cn'
+    }
+    if (!word) word = pickWord()
+    return wordQuestion(t, word, pool)
+  }
 
   if (boss) {
     // Boss 混合卷:2 道单词热身 + 全题型覆盖(第 10 章压轴换成阅读判断)
     const plan = ['w', 'w', 'phonics', 'sentence', 'cloze', 'respond', 'pic', data.reading ? 'tf' : 'spell']
     for (const slot of plan) {
       if (slot === 'w') {
-        const word = pickWord()
-        questions.push(wordQuestion(['listen', 'image', 'cn'][(levelId + questions.length) % 3], word, pool))
+        questions.push(wordSlot(levelId + questions.length))
       } else if (slot === 'spell') {
         questions.push(spellQuestion(pickWord(), pool))
       } else if (slot === 'phonics' && ph && ph.pairs.length) {
@@ -149,8 +191,7 @@ export function makeQuestions(chapterId, count, boss = false, levelId = 0) {
   // 普通关
   const wordCount = Math.max(2, Math.min(3, count - 3))
   for (let i = 0; i < wordCount; i++) {
-    const word = pickWord()
-    questions.push(wordQuestion(['listen', 'image', 'cn'][(levelId + i) % 3], word, pool))
+    questions.push(wordSlot(levelId + i))
   }
   const rot = [...SENT_TYPES.slice(levelId % SENT_TYPES.length), ...SENT_TYPES.slice(0, levelId % SENT_TYPES.length)]
   const sentSlots = rot.slice(0, count - wordCount)
@@ -175,10 +216,12 @@ export function makeQuestions(chapterId, count, boss = false, levelId = 0) {
 export function makeQuiz(chapterId) {
   const data = getChapterData(chapterId)
   const pool = wordPool(chapterId)
+  const picPool = pool.filter(isPictureWord)
   const ph = data.phonics
   const quiz = []
   quiz.push(wordQuestion('listen', pool[0], pool))
-  quiz.push(wordQuestion('image', pool[1] || pool[0], pool))
+  if (picPool.length) quiz.push(wordQuestion('image', picPool[Math.floor(Math.random() * picPool.length)], pool))
+  else quiz.push(wordQuestion('cn', pool[1] || pool[0], pool))
   if (ph && ph.pairs.length) quiz.push(phonicsQuestion(ph.pairs[0], ph))
   else quiz.push(wordQuestion('cn', pool[2] || pool[0], pool))
   quiz.push(clozeQuestion(data.sentences[0], pool))
@@ -195,10 +238,13 @@ export function makeExamples(chapterId) {
   const pool = wordPool(chapterId)
   const examples = []
 
-  const w = data.words[0]
+  const picWord = pool.find(isPictureWord)
+  const w = picWord || data.words[0]
   examples.push({
-    q: wordQuestion('image', w, pool),
-    explain: `看图:${w.emoji} 就是 ${w.word},意思是"${w.cn}"。读音:${w.sound}`,
+    q: wordQuestion(picWord ? 'image' : 'cn', w, pool),
+    explain: picWord
+      ? `看图:${w.emoji} 就是 ${w.word},意思是"${w.cn}"。读音:${w.sound}`
+      : `"${w.cn}" 的英文是 ${w.word},读音:${w.sound}`,
   })
 
   if (data.phonics && data.phonics.pairs.length) {

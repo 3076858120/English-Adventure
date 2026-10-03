@@ -837,6 +837,23 @@ h3 { font-size: 1.05rem; margin: 14px 0 8px; }
 @keyframes tokFlash { 0%, 100% { transform: none; } 40% { transform: scale(1.15); } }
 .ph { text-decoration-color: #e53935; text-decoration-thickness: 3px; text-underline-offset: 3px; }
 
+/* ---------- 大图卡片(看图选词/看图选句) ---------- */
+.picture-card {
+  min-width: 180px; padding: 18px 30px; border-radius: 26px;
+  background: linear-gradient(160deg, #fff8e1, #ffe0b2);
+  border: 4px solid #ffd54f;
+  box-shadow: 0 8px 0 rgba(0,0,0,0.06);
+  display: flex; align-items: center; justify-content: center;
+}
+.picture-emoji {
+  font-size: 110px; line-height: 1.1;
+  filter: drop-shadow(0 6px 6px rgba(0,0,0,0.15));
+}
+@media (max-width: 520px) {
+  .picture-emoji { font-size: 84px; }
+  .picture-card { min-width: 140px; padding: 14px 22px; }
+}
+
 /* ---------- 答题组件通用 ---------- */
 .question-view {
   width: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;
