@@ -3,6 +3,7 @@ import { useGame } from '../store/GameContext'
 import { getLevel } from '../data/levels'
 import { makeQuestions } from '../data/lessons'
 import { speak } from '../lib/speech'
+import { sfxWin } from '../lib/audio'
 import QuestionView from './QuestionView'
 
 const DAMAGE = 20
@@ -85,6 +86,7 @@ export default function Battle({ levelId }) {
       setDmgFloat(null)
       if (hp <= 0 || qi + 1 >= questions.length) {
         setPhase('win')
+        sfxWin()
         speak('You win! Great job!')
         timeoutRef.current = setTimeout(() => {
           const { chestItem } = completeLevel(levelId)

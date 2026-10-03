@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { GameProvider, useGame } from './store/GameContext'
+import { unlockAudio } from './lib/speech'
 import NameGate from './screens/NameGate'
 import Home from './screens/Home'
 import Map from './screens/Map'
@@ -71,6 +72,13 @@ export default function App() {
     }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  // 首次点击解锁音频(iOS/安卓 WebView 要求用户手势后才能发声)
+  useEffect(() => {
+    const h = () => unlockAudio()
+    document.addEventListener('pointerdown', h, { once: true })
+    return () => document.removeEventListener('pointerdown', h)
   }, [])
 
   return (

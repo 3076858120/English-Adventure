@@ -3,10 +3,44 @@ import { useGame } from '../store/GameContext'
 import { CHAPTERS } from '../data/levels'
 import { getChapterData } from '../data/curriculum'
 import { makeQuiz, makeExamples } from '../data/lessons'
-import { speak, stopSpeak } from '../lib/speech'
+import { speak, stopSpeak, ttsInfo } from '../lib/speech'
+import { sfxWin } from '../lib/audio'
 import QuestionView, { SentenceText, WordWithUnderline } from './QuestionView'
 
 const SLIDE_MS = 4500
+
+// 没声音自检:告诉家长检测结果和解决办法
+function TtsCheck() {
+  const [info] = useState(() => ttsInfo())
+  const [done, setDone] = useState(false)
+  return (
+    <div className="tts-check">
+      <p className="tts-line">
+        {info.supported
+          ? `检测结果:本机有 ${info.voiceCount} 个语音包`
+          : '检测结果:❌ 此浏览器不支持语音发音'}
+      </p>
+      <p className="tts-line">
+        {info.hasEnglish
+          ? `✅ 找到英语语音:${info.englishName}`
+          : info.usingFallback
+            ? `⚠️ 没有英语语音包,现在用「${info.fallbackName}」代替(能出声,口音重一点)`
+            : '❌ 一个语音包都没有,发音暂时不可用(下面的音效不受影响)'}
+      </p>
+      <button className="btn btn-small btn-primary" onClick={() => speak("Hello! Let's learn English!", { onEnd: () => setDone(true) })}>
+        ▶ 试听一下
+      </button>
+      {done && <p className="tts-line">已播放完毕。如果刚才什么都没听到:请检查设备音量、是否静音 🔇</p>}
+      {!info.hasEnglish && (
+        <div className="tts-fix">
+          <p>想让发音更标准?二选一:</p>
+          <p>① 电脑:Windows 设置 → 时间和语言 → 语言和区域 → 添加语言「英语(美国)」并勾选「语音」</p>
+          <p>② 或直接用手机浏览器打开本网站(手机自带英语语音)</p>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function WordBig({ w }) {
   return (
@@ -35,6 +69,7 @@ export default function Lesson({ chapterId }) {
   const [auto, setAuto] = useState(true)
   const [exIdx, setExIdx] = useState(0)
   const [qi, setQi] = useState(0)
+  const [showTtsCheck, setShowTtsCheck] = useState(false)
   const timerRef = useRef(null)
 
   const examples = useMemo(() => makeExamples(chapterId), [chapterId])
@@ -72,6 +107,7 @@ export default function Lesson({ chapterId }) {
   useEffect(() => () => stopSpeak(), [])
 
   const goSlide = (i) => {
+    setAuto(false) // 手动翻页后接管控制,不再自动跳页
     setSlideIdx(Math.max(0, Math.min(i, slides.length - 1)))
   }
 
@@ -233,6 +269,10 @@ export default function Lesson({ chapterId }) {
           <button className="btn btn-ghost btn-small teach-skip" onClick={startExample}>
             跳过微课,直接去例题 ⏩
           </button>
+          <button className="btn btn-ghost btn-small teach-skip" onClick={() => setShowTtsCheck(!showTtsCheck)}>
+            🔊 没有声音?点我检查
+          </button>
+          {showTtsCheck && <TtsCheck />}
         </div>
       )}
 

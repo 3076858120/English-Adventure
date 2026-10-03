@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { speak } from '../lib/speech'
+import { sfxCorrect, sfxWrong } from '../lib/audio'
 
 // 句型彩色渲染:be=蓝 doing=橙 key=紫(语法重点)
 export function SentenceText({ en, m = {}, highlight = -1 }) {
@@ -50,6 +51,7 @@ export default function QuestionView({ q, demo = false, explain = '', frozen = f
   const [shake, setShake] = useState(null)
   const [wrongN, setWrongN] = useState(0)
   const [tiles, setTiles] = useState([]) // spell/sentence 已点词块
+  const [rowShake, setRowShake] = useState(false)
   const timerRef = useRef(null)
 
   const isTileType = q.type === 'spell' || q.type === 'sentence'
@@ -72,9 +74,11 @@ export default function QuestionView({ q, demo = false, explain = '', frozen = f
   const answer = (correct) => {
     if (correct) {
       setPicked(true)
+      sfxCorrect()
       if (q.type === 'listen' || q.type === 'cloze') speak(q.word || q.answer)
       onAnswer && onAnswer(true)
     } else {
+      sfxWrong()
       setWrongN((n) => n + 1)
       onAnswer && onAnswer(false)
     }
@@ -91,15 +95,17 @@ export default function QuestionView({ q, demo = false, explain = '', frozen = f
     }
   }
 
-  // ---- 词块类(spell / sentence):逐位即时校验,错了轻抖清空,不惩罚 ----
+  // ---- 词块类(spell / sentence):逐位即时校验,错了立即清空(连点不卡)+ 轻抖提示 ----
   const tileTap = (tile) => {
     if (disabled || tiles.some((x) => x.idx === tile.idx)) return
     const nextLen = tiles.length + 1
     const expected = q.type === 'spell' ? q.word[nextLen - 1] : q.tokens[nextLen - 1]
     if (tile.t !== expected) {
-      setWrongN((n) => n + 1)
+      setTiles([])
+      setRowShake(true)
       if (timerRef.current) clearTimeout(timerRef.current)
-      timerRef.current = setTimeout(() => setTiles([]), 400)
+      timerRef.current = setTimeout(() => setRowShake(false), 380)
+      setWrongN((n) => n + 1)
       onAnswer && onAnswer(false)
       return
     }
@@ -183,7 +189,7 @@ export default function QuestionView({ q, demo = false, explain = '', frozen = f
               <span key={i} className={`spell-slot ${i === 0 ? 'hint' : ''}`}>{tiles[i]?.t || ''}</span>
             ))}
           </div>
-          <div className="spell-tiles">
+          <div className={`spell-tiles ${rowShake ? 'shake' : ''}`}>
             {q.letters.map((letter, idx) => (
               <button
                 key={idx}
@@ -219,7 +225,7 @@ export default function QuestionView({ q, demo = false, explain = '', frozen = f
               <span key={i} className={`sentence-slot ${tiles[i] ? 'filled' : ''}`}>{tiles[i]?.t || ''}</span>
             ))}
           </div>
-          <div className="sentence-tiles">
+          <div className={`sentence-tiles ${rowShake ? 'shake' : ''}`}>
             {q.tiles.map((tile) => (
               <button
                 key={tile.idx}
