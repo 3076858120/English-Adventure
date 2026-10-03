@@ -495,6 +495,41 @@ export const CHAPTER_CONTENT = {
         { text: 'We can plant trees to help animals.', answer: true },
       ],
     },
+    // 第 10 章专属:动物信息卡(对齐课本第 31 页 An animal card 与通关卷写作题)
+    writing: {
+      title: 'An animal card',
+      cn: '我的动物信息卡',
+      intro: '和课本第 31 页一样,选一只动物,点词块完成你的专属信息卡!',
+      animals: [
+        {
+          name: 'panda', emoji: '🐼',
+          fields: [
+            { label: 'Where they live', cn: '住在哪里', say: 'They live', ok: 'in China', chips: ['in the sea', 'in China', 'near the North Pole'] },
+            { label: 'What they eat', cn: '爱吃什么', say: 'They eat', ok: 'bamboo', chips: ['bamboo', 'fresh meat', 'fruit'] },
+            { label: 'What they look like', cn: '长什么样', say: 'They are', ok: 'black and white', chips: ['orange and black', 'black and white', 'light grey'] },
+            { label: 'What they can do', cn: '会做什么', say: 'They can', ok: 'climb trees', chips: ['run fast', 'swim', 'climb trees'] },
+          ],
+        },
+        {
+          name: 'tiger', emoji: '🐯',
+          fields: [
+            { label: 'Where they live', cn: '住在哪里', say: 'They live', ok: 'in China', chips: ['in China', 'in the trees', 'in the sea'] },
+            { label: 'What they eat', cn: '爱吃什么', say: 'They eat', ok: 'fresh meat', chips: ['bamboo', 'fresh meat', 'fruit'] },
+            { label: 'What they look like', cn: '长什么样', say: 'They are', ok: 'orange and black', chips: ['orange and black', 'black and white', 'light grey'] },
+            { label: 'What they can do', cn: '会做什么', say: 'They can', ok: 'run fast', chips: ['climb trees', 'run fast', 'swim'] },
+          ],
+        },
+        {
+          name: 'elephant', emoji: '🐘',
+          fields: [
+            { label: 'Where they live', cn: '住在哪里', say: 'They live', ok: 'in Africa and India', chips: ['in Africa and India', 'in China', 'in the sea'] },
+            { label: 'What they eat', cn: '爱吃什么', say: 'They eat', ok: 'bananas and fruit', chips: ['bamboo', 'bananas and fruit', 'fresh meat'] },
+            { label: 'What they look like', cn: '长什么样', say: 'They are', ok: 'light grey', chips: ['orange and black', 'light grey', 'black and white'] },
+            { label: 'What they can do', cn: '会做什么', say: 'They can', ok: 'shower with its trunk', chips: ['run fast', 'shower with its trunk', 'climb trees'] },
+          ],
+        },
+      ],
+    },
   },
 }
 

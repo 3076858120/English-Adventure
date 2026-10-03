@@ -143,7 +143,7 @@ const winBoss = await (async () => {
 ok('BOSS mixed 通关', winBoss)
 ok('Boss 卷出现 ≥4 种题型', seenTypes.size >= 4, [...seenTypes].join(','))
 
-// 8. 第 10 章学习营:阅读判断(tf)
+// 8. 第 10 章学习营:阅读判断(tf)+ 动物信息卡写作(统一循环直到通关)
 await page.goto(BASE + '/#lesson-10'); await sleep(700)
 await page.evaluate(() => [...document.querySelectorAll('button')].find((b) => b.innerText.includes('跳过微课'))?.click())
 await sleep(400)
@@ -151,18 +151,29 @@ for (let i = 0; i < 3; i++) {
   await page.evaluate(() => [...document.querySelectorAll('.example-wrap .btn-primary')].at(-1)?.click())
   await sleep(400)
 }
-const readingSeen = await (async () => {
-  const t0 = Date.now()
-  while (Date.now() - t0 < 90000) {
-    const t = await bodyText()
-    if (t.includes('学习营完成')) return true
-    if (t.includes('Love and Protect')) page.__sawReading = true
-    await answerOnce()
-    await sleep(400)
+let sawReading = false
+let sawCard = false
+const t0w = Date.now()
+while (Date.now() - t0w < 180000) {
+  const t = await bodyText()
+  if (t.includes('Love and Protect')) sawReading = true
+  if (t.includes('学习营完成')) break
+  if (t.includes('An animal card') || t.includes('动物信息卡')) {
+    sawCard = true
+    const animal = await page.$('.card-animal')
+    if (animal) { await animal.click(); await sleep(250); continue }
+    const chips = await page.$$('.animal-card .chip-btn')
+    if (chips.length) { await chips[Math.floor(Math.random() * chips.length)].click(); await sleep(250); continue }
+    const doneBtn = await page.$('.card-done .btn-primary')
+    if (doneBtn) { await doneBtn.click(); await sleep(500); continue }
+    await sleep(250)
+    continue
   }
-  return false
-})()
-ok('第10章学习营含阅读短文+判断题并完成', readingSeen && page.__sawReading === true)
+  await answerOnce()
+  await sleep(350)
+}
+const writingDone = (await bodyText()).includes('学习营完成')
+ok('第10章学习营含阅读短文+写作卡并完成', writingDone && sawReading && sawCard)
 
 // 9. 未解锁拦截 + 刷新恢复
 await page.goto(BASE + '/#level-23'); await sleep(600)

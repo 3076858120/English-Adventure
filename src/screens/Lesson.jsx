@@ -4,7 +4,7 @@ import { CHAPTERS } from '../data/levels'
 import { getChapterData } from '../data/curriculum'
 import { makeQuiz, makeExamples } from '../data/lessons'
 import { speak, stopSpeak, ttsInfo } from '../lib/speech'
-import { sfxWin } from '../lib/audio'
+import { sfxWin, sfxCorrect, sfxWrong, sfxTap } from '../lib/audio'
 import QuestionView, { SentenceText, WordWithUnderline } from './QuestionView'
 
 const SLIDE_MS = 4500
@@ -70,6 +70,10 @@ export default function Lesson({ chapterId }) {
   const [exIdx, setExIdx] = useState(0)
   const [qi, setQi] = useState(0)
   const [showTtsCheck, setShowTtsCheck] = useState(false)
+  const [cardAnimal, setCardAnimal] = useState(null)
+  const [cardField, setCardField] = useState(0)
+  const [cardPicks, setCardPicks] = useState([])
+  const [chipShake, setChipShake] = useState(null)
   const timerRef = useRef(null)
 
   const examples = useMemo(() => makeExamples(chapterId), [chapterId])
@@ -146,11 +150,53 @@ export default function Lesson({ chapterId }) {
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
       if (qi + 1 < quiz.length) setQi(qi + 1)
-      else {
+      else if (data.writing) {
+        // 练习完 → 写作卡(完成后才算学习营通关)
+        setCardAnimal(null)
+        setCardField(0)
+        setCardPicks([])
+        setStep('writing')
+      } else {
         completeLesson(chapterId)
         setStep('done')
       }
     }, 950)
+  }
+
+  // ---- 写作卡 ----
+  const pickAnimal = (a) => {
+    sfxTap()
+    setCardAnimal(a)
+    setCardField(0)
+    setCardPicks([])
+  }
+
+  const pickChip = (f, chip) => {
+    if (chip !== f.ok) {
+      sfxWrong()
+      setChipShake(chip)
+      if (timerRef.current) clearTimeout(timerRef.current)
+      timerRef.current = setTimeout(() => setChipShake(null), 400)
+      return
+    }
+    sfxCorrect()
+    speak(`${f.say} ${f.ok}.`, { rate: 0.75 })
+    setCardPicks((p) => [...p, chip])
+    setCardField((n) => n + 1)
+  }
+
+  const readCard = () => {
+    if (!cardAnimal) return
+    const lines = cardAnimal.fields.map((f) => {
+      const val = cardPicks[cardAnimal.fields.indexOf(f)] || f.ok
+      return `${f.say} ${val}.`
+    })
+    speak(`${cardAnimal.name}s. ${lines.join(' ')}`, { rate: 0.75 })
+  }
+
+  const finishWriting = () => {
+    completeLesson(chapterId)
+    setStep('done')
   }
 
   const ex = examples[exIdx]
@@ -296,6 +342,66 @@ export default function Lesson({ chapterId }) {
       {step === 'quiz' && quiz[qi] && (
         <div className="lesson-quiz">
           <QuestionView q={quiz[qi]} onAnswer={onQuizAnswer} />
+        </div>
+      )}
+
+      {/* ========== 第四步(第10章):动物信息卡写作 ========== */}
+      {step === 'writing' && data.writing && (
+        <div className="writing-wrap">
+          <div className="pet-teacher">
+            <span className="pet-teacher-avatar">{pet?.emoji || '🐣'}</span>
+            <span className="pet-teacher-say">{data.writing.cn}!和课本第 31 页一样,做一张你自己的卡片~</span>
+          </div>
+          <div className="animal-card">
+            <div className="animal-card-title">🐾 {data.writing.title}</div>
+
+            {!cardAnimal ? (
+              <div className="card-animals">
+                <p className="card-ask">选你的动物:</p>
+                <div className="card-animals-row">
+                  {data.writing.animals.map((a) => (
+                    <button key={a.name} className="card-animal" onClick={() => pickAnimal(a)}>
+                      <span className="card-animal-emoji">{a.emoji}</span>
+                      {a.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="animal-card-name">{cardAnimal.emoji} {cardAnimal.name}s</div>
+                {cardAnimal.fields.map((f, i) => {
+                  const val = cardPicks[i]
+                  const isCurrent = i === cardField
+                  return (
+                    <div key={f.label} className={`card-field ${isCurrent ? 'current' : ''} ${val ? 'filled' : ''}`}>
+                      <span className="card-label">{f.label}:</span>
+                      {val ? (
+                        <span className="card-value">{val}</span>
+                      ) : isCurrent ? (
+                        <span className="card-chips">
+                          {f.chips.map((c) => (
+                            <button key={c} className={`chip-btn ${chipShake === c ? 'wrong shake' : ''}`} onClick={() => pickChip(f, c)}>
+                              {c}
+                            </button>
+                          ))}
+                        </span>
+                      ) : (
+                        <span className="card-blank">_____</span>
+                      )}
+                      {isCurrent && <small className="card-cn">💡 {f.cn}</small>}
+                    </div>
+                  )
+                })}
+                {cardField >= cardAnimal.fields.length && (
+                  <div className="card-done pop-in">
+                    <button className="btn btn-ghost" onClick={readCard}>🔊 朗读我的卡片</button>
+                    <button className="btn btn-primary btn-big" onClick={finishWriting}>完成卡片!⭐</button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       )}
 

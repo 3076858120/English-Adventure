@@ -1009,6 +1009,39 @@ h3 { font-size: 1.05rem; margin: 14px 0 8px; }
 .tts-fix { background: #faf9ff; border-radius: 12px; padding: 10px 12px; }
 .tts-fix p { font-size: 0.88rem; color: #55517a; line-height: 1.7; font-weight: 600; }
 
+/* ---------- 动物信息卡(第10章写作启蒙,对齐课本 An animal card) ---------- */
+.writing-wrap { display: flex; flex-direction: column; gap: 14px; max-width: 620px; margin: 0 auto; width: 100%; }
+.animal-card {
+  background: #fffdf5; border: 3px solid #cfa96b; border-radius: 18px;
+  padding: 20px; box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.animal-card-title {
+  font-size: 1.3rem; font-weight: 900; color: #8d6e63; text-align: center;
+  border-bottom: 2px dashed #e0ceb0; padding-bottom: 8px;
+}
+.animal-card-name { font-size: 1.6rem; font-weight: 900; color: var(--purple); text-align: center; }
+.card-animals { text-align: center; display: flex; flex-direction: column; gap: 10px; }
+.card-ask { font-weight: 800; color: #7a769a; }
+.card-animals-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.card-animal {
+  border: 3px solid #e4e0f7; background: #faf9ff; border-radius: 18px; padding: 14px 22px;
+  font-size: 1.15rem; font-weight: 900; cursor: pointer; font-family: inherit; color: var(--ink);
+  display: flex; flex-direction: column; align-items: center; gap: 6px; box-shadow: 0 5px 0 rgba(0,0,0,0.08);
+  transition: transform 0.12s;
+}
+.card-animal:active { transform: translateY(3px); }
+.card-animal:hover { border-color: var(--purple); }
+.card-animal-emoji { font-size: 2.6rem; }
+.card-field { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 4px; border-bottom: 1px dashed #efe7d6; }
+.card-field.current { background: #fffbe8; border-radius: 10px; border-bottom: none; }
+.card-label { font-weight: 900; color: #55517a; min-width: 148px; font-size: 0.95rem; }
+.card-value { background: #e6f6e9; color: #2e7d32; border-radius: 10px; padding: 6px 12px; font-weight: 900; animation: popIn 0.35s ease; }
+.card-blank { color: #c9bfa8; font-weight: 700; letter-spacing: 2px; }
+.card-cn { width: 100%; color: #b2600a; font-weight: 700; font-size: 0.85rem; }
+.card-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.card-done { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; padding-top: 8px; }
+
 @media (max-width: 520px) {
   .teach-slide { padding: 20px 14px; min-height: 330px; }
   .teach-letters span { font-size: 2rem; }
