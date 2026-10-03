@@ -361,6 +361,18 @@ export function GameProvider({ children }) {
     return ok
   }, [])
 
+  // 断线自动重连:配置了云端但处于本地模式时,每 45 秒 + 网络恢复事件时自动重试
+  useEffect(() => {
+    if (loading || cloudStatus !== 'local') return undefined
+    const attempt = () => retrySync()
+    const t = setInterval(attempt, 45000)
+    window.addEventListener('online', attempt)
+    return () => {
+      clearInterval(t)
+      window.removeEventListener('online', attempt)
+    }
+  }, [loading, cloudStatus, retrySync])
+
   const getTransferCode = useCallback(async () => exportTransferCode(), [])
   const restoreByTransferCode = useCallback(
     async (code) => {

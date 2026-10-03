@@ -265,10 +265,23 @@ export async function initStorage() {
   }
 }
 
+// 断线重连:确保匿名会话存在后重推当前存档(自动重试/手动重试/网络恢复都走这里)
 export async function retryCloudSync(saveData) {
-  if (!cloudAvailable) {
-    const sb = getSupabase()
-    if (!sb) return false
+  const sb = getSupabase()
+  if (!sb) return false
+  try {
+    if (!userId) {
+      const user = await ensureSession()
+      userId = user.id
+    }
+    const ok = await pushCloud(saveData)
+    if (ok) {
+      cloudAvailable = true
+      lastError = null
+    }
+    return ok
+  } catch (e) {
+    lastError = e?.message || String(e)
+    return false
   }
-  return pushCloud(saveData)
 }

@@ -35,10 +35,11 @@ let text = await waitText(page, /勇敢的冒险家|冒险进度/)
 ok('线上站点打开且 React 挂载', /勇敢的冒险家|冒险进度/.test(text), text.slice(0, 24).replace(/\n/g, ' '))
 
 if (text.includes('勇敢的冒险家')) {
-  await page.type('.namegate-input', '云端小英雄')
+  const nick = '云端小英雄' + String(Date.now()).slice(-4)
+  await page.type('.namegate-input', nick)
   await page.click('.namegate-card .btn-primary')
   text = await waitText(page, /云端已同步|本地模式/)
-  ok('首页昵称显示', text.includes('云端小英雄'))
+  ok('首页昵称显示', text.includes(nick))
   ok('云端徽章=已同步(github.io 直连 Supabase OK)', text.includes('云端已同步'), (text.match(/(云端已同步|本地模式[^\n]*)/) || [''])[0])
 
   // PetRoom 云存档面板:手动同步验证 upsert
@@ -53,8 +54,8 @@ if (text.includes('勇敢的冒险家')) {
   // 刷新后数据仍在
   await page.reload({ waitUntil: 'networkidle2' })
   await page.goto(BASE + '#home')
-  text = await waitText(page, /云端小英雄|勇敢的冒险家/)
-  ok('刷新后昵称仍在', text.includes('云端小英雄'))
+  text = await waitText(page, new RegExp(nick + '|勇敢的冒险家'))
+  ok('刷新后昵称仍在', text.includes(nick))
 }
 
 ok('全程无 JS 错误', errors.length === 0, errors.slice(0, 2).join(' | '))
